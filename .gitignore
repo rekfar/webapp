@@ -9,6 +9,7 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .claude/worktrees/
+.vite/*
 
 # Logs
 logs
