@@ -1,0 +1,236 @@
+:root {
+  --header-height: 3.25rem;
+
+  --surface: rgba(255, 255, 255, 0.94);
+  --surface-hover: #ffffff;
+  --border: rgba(15, 23, 42, 0.14);
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --accent: #2563eb;
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 6px 20px rgba(15, 23, 42, 0.12);
+  --radius: 0.625rem;
+
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #eef2f6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- App shell ---------- */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app__header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+  height: var(--header-height);
+  padding: 0 1rem;
+  background: #0f172a;
+  color: #f8fafc;
+  flex: none;
+}
+
+.app__title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.app__subtitle {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #94a3b8;
+}
+
+.app__main {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ---------- Map ---------- */
+
+.map {
+  height: 100%;
+  width: 100%;
+  background: #dde5ec;
+}
+
+/* Leaflet's own controls sit at z-index 1000; match that so overlays stack
+   above the tile panes but never above a Leaflet popup (z-index 700+ pane). */
+.map-overlay {
+  position: absolute;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+.map-overlay[data-position='top-left'] {
+  top: 0.75rem;
+  left: 0.75rem;
+}
+
+.map-overlay[data-position='right'] {
+  top: 5.5rem;
+  right: 0.75rem;
+}
+
+.map-overlay[data-position='bottom-left'] {
+  bottom: 2.25rem;
+  left: 0.75rem;
+}
+
+/* ---------- Basemap switcher ---------- */
+
+.basemap-switcher {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  margin: 0;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  backdrop-filter: blur(6px);
+  box-shadow: var(--shadow);
+}
+
+.basemap-switcher__legend {
+  padding: 0 0.25rem 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.basemap-switcher__option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3125rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.basemap-switcher__option:hover {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.basemap-switcher__option[data-selected='true'] {
+  background: rgba(37, 99, 235, 0.12);
+  font-weight: 600;
+}
+
+.basemap-switcher__option input {
+  accent-color: var(--accent);
+  margin: 0;
+}
+
+/* ---------- Buttons ---------- */
+
+.control-button {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+
+.control-button:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--accent);
+}
+
+.control-button:disabled {
+  cursor: progress;
+  color: var(--text-muted);
+}
+
+.control-button[data-state='error'] {
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.4);
+}
+
+.control-button:focus-visible,
+.basemap-switcher__option:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- Status bar ---------- */
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.status-bar__label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.status-bar__divider {
+  width: 1px;
+  height: 0.875rem;
+  background: var(--border);
+}
+
+/* ---------- Leaflet tweaks ---------- */
+
+.leaflet-container {
+  font: inherit;
+}
+
+.leaflet-control-attribution {
+  font-size: 0.6875rem;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+@media (max-width: 30rem) {
+  .basemap-switcher__legend {
+    display: none;
+  }
+
+  .map-overlay[data-position='bottom-left'] {
+    display: none;
+  }
+}
