@@ -19,7 +19,7 @@ export const KARTVERKET_ATTRIBUTION =
 export const MAX_NATIVE_ZOOM = 18
 
 /** Leaflet upscales tiles beyond MAX_NATIVE_ZOOM rather than blanking out. */
-export const MAX_ZOOM = 20
+export const MAX_ZOOM = 19
 
 export interface Basemap {
   id: string
