@@ -18,6 +18,7 @@ import {
   tileUrlTemplate,
 } from '../config/basemaps'
 import { DEFAULT_CENTER, DEFAULT_ZOOM, MAX_BOUNDS, MIN_ZOOM } from '../config/view'
+import { BRAND } from '../brand/colors'
 import { BasemapSwitcher } from './BasemapSwitcher'
 import { HashSync, parseHash } from './HashSync'
 import { LocateControl } from './LocateControl'
@@ -67,7 +68,7 @@ export function MapView() {
         <CircleMarker
           center={userPosition}
           radius={7}
-          pathOptions={{ color: '#ffffff', weight: 2, fillColor: '#2563eb', fillOpacity: 1 }}
+          pathOptions={{ color: '#ffffff', weight: 2, fillColor: BRAND.rust, fillOpacity: 1 }}
         >
           <Tooltip direction="top" offset={[0, -8]}>
             Din posisjon

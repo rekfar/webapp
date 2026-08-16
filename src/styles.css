@@ -1,17 +1,35 @@
+/* ---------- Brand tokens ----------
+   Rekfar: cream paper, forest ink, rust as the single accent. The palette is
+   deliberately small — the map supplies all the other colour on screen. */
+
 :root {
+  --rf-cream: #f6f3ec;
+  --rf-cream-2: #efeae0;
+  --rf-charcoal: #22201c;
+  --rf-forest: #263b2e;
+  --rf-forest-deep: #1b2b21;
+  --rf-rust: #be6a45;
+  /* Darkened rust for text and icons — the brand rust is too light on cream. */
+  --rf-rust-ink: #a0522c;
+  --rf-sage: #8a9a82;
+
+  --font-brand: 'Space Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    sans-serif;
+
   --header-height: 3.25rem;
 
-  --surface: rgba(255, 255, 255, 0.94);
-  --surface-hover: #ffffff;
-  --border: rgba(15, 23, 42, 0.14);
-  --text: #0f172a;
-  --text-muted: #64748b;
-  --accent: #2563eb;
-  --shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 6px 20px rgba(15, 23, 42, 0.12);
-  --radius: 0.625rem;
+  --surface: rgba(246, 243, 236, 0.94);
+  --surface-hover: #fffdf7;
+  --border: rgba(34, 32, 28, 0.14);
+  --text: var(--rf-charcoal);
+  --text-muted: rgba(34, 32, 28, 0.55);
+  --accent: var(--rf-rust-ink);
+  --shadow: 0 1px 2px rgba(27, 43, 33, 0.08), 0 6px 20px rgba(27, 43, 33, 0.16);
+  --radius: 0.75rem;
 
-  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-brand);
   color: var(--text);
+  color-scheme: light;
 }
 
 * {
@@ -26,7 +44,7 @@ body,
 }
 
 body {
-  background: #eef2f6;
+  background: var(--rf-cream-2);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -40,26 +58,31 @@ body {
 
 .app__header {
   display: flex;
-  align-items: baseline;
-  gap: 0.625rem;
-  height: var(--header-height);
-  padding: 0 1rem;
-  background: #0f172a;
-  color: #f8fafc;
+  align-items: center;
+  gap: 0.75rem;
+  height: calc(var(--header-height) + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) max(1rem, env(safe-area-inset-right)) 0
+    max(1rem, env(safe-area-inset-left));
+  background: linear-gradient(100deg, var(--rf-forest-deep) 0%, var(--rf-forest) 100%);
+  color: var(--rf-cream);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
   flex: none;
 }
 
-.app__title {
-  margin: 0;
-  font-size: 1.0625rem;
-  font-weight: 650;
-  letter-spacing: 0.01em;
+.app__divider {
+  width: 1px;
+  height: 1.125rem;
+  background: rgba(246, 243, 236, 0.2);
+  flex: none;
 }
 
 .app__subtitle {
   margin: 0;
   font-size: 0.8125rem;
-  color: #94a3b8;
+  color: var(--rf-sage);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .app__main {
@@ -68,12 +91,38 @@ body {
   min-height: 0;
 }
 
+/* ---------- Brand lockup ---------- */
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+}
+
+.brand__tile {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
+  background: var(--rf-rust);
+  color: #ffffff;
+}
+
+.brand__word {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
 /* ---------- Map ---------- */
 
 .map {
   height: 100%;
   width: 100%;
-  background: #dde5ec;
+  background: var(--rf-cream-2);
 }
 
 /* Leaflet's own controls sit at z-index 1000; match that so overlays stack
@@ -115,12 +164,12 @@ body {
 }
 
 .basemap-switcher__legend {
-  padding: 0 0.25rem 0.25rem;
+  padding: 0 0.25rem 0.375rem;
   font-size: 0.6875rem;
-  font-weight: 650;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
+  letter-spacing: 0.12em;
+  color: var(--accent);
 }
 
 .basemap-switcher__option {
@@ -128,23 +177,23 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 0.3125rem 0.5rem;
-  border-radius: 0.375rem;
+  border-radius: 0.5rem;
   font-size: 0.8125rem;
   cursor: pointer;
   user-select: none;
 }
 
 .basemap-switcher__option:hover {
-  background: rgba(37, 99, 235, 0.08);
+  background: rgba(190, 106, 69, 0.1);
 }
 
 .basemap-switcher__option[data-selected='true'] {
-  background: rgba(37, 99, 235, 0.12);
-  font-weight: 600;
+  background: rgba(190, 106, 69, 0.16);
+  font-weight: 500;
 }
 
 .basemap-switcher__option input {
-  accent-color: var(--accent);
+  accent-color: var(--rf-rust);
   margin: 0;
 }
 
@@ -159,7 +208,7 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
-  color: var(--text);
+  color: var(--rf-forest);
   box-shadow: var(--shadow);
   cursor: pointer;
 }
@@ -175,8 +224,8 @@ body {
 }
 
 .control-button[data-state='error'] {
-  color: #dc2626;
-  border-color: rgba(220, 38, 38, 0.4);
+  color: #b3261e;
+  border-color: rgba(179, 38, 30, 0.4);
 }
 
 .control-button:focus-visible,
@@ -203,8 +252,9 @@ body {
 
 .status-bar__label {
   font-size: 0.625rem;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   color: var(--text-muted);
 }
 
@@ -214,15 +264,67 @@ body {
   background: var(--border);
 }
 
-/* ---------- Leaflet tweaks ---------- */
+/* ---------- Leaflet tweaks ----------
+   Leaflet ships its own chrome; restyle it rather than replacing it, so the
+   zoom, scale and attribution controls read as part of the same kit. */
 
 .leaflet-container {
   font: inherit;
 }
 
-.leaflet-control-attribution {
+.leaflet-bar {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: var(--surface);
+  color: var(--rf-forest);
+  border-bottom-color: var(--border);
+}
+
+.leaflet-bar a:hover {
+  background: var(--surface-hover);
+  color: var(--accent);
+}
+
+.leaflet-bar a.leaflet-disabled {
+  background: var(--surface);
+  color: rgba(34, 32, 28, 0.3);
+}
+
+.leaflet-control-scale-line {
+  padding: 0.125rem 0.375rem;
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 0.375rem 0.375rem;
+  background: var(--surface);
+  color: var(--text);
   font-size: 0.6875rem;
-  background: rgba(255, 255, 255, 0.85);
+  line-height: 1.2;
+}
+
+.leaflet-control-attribution {
+  padding: 0 0.375rem;
+  font-size: 0.6875rem;
+  background: rgba(246, 243, 236, 0.85);
+  color: var(--text-muted);
+}
+
+.leaflet-control-attribution a {
+  color: var(--accent);
+}
+
+.leaflet-tooltip {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.75rem;
+  box-shadow: var(--shadow);
 }
 
 @media (max-width: 30rem) {
@@ -231,6 +333,11 @@ body {
   }
 
   .map-overlay[data-position='bottom-left'] {
+    display: none;
+  }
+
+  .app__divider,
+  .app__subtitle {
     display: none;
   }
 }
