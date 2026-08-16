@@ -1,0 +1,24 @@
+# The site is built in GitHub Actions and uploaded with `netlify deploy --dir=dist`,
+# so no [build.command] is set here on purpose — Netlify must never build this repo
+# itself. `publish` is declared so the config still describes the site correctly.
+[build]
+  publish = "dist"
+
+# Vite emits content-hashed filenames into dist/assets, so these are safe to cache
+# forever — a new build produces new filenames.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # geolocation=(self) is required — LocateControl.tsx calls map.locate().
+    # Removing it silently breaks the "Vis min posisjon" button.
+    Permissions-Policy = "geolocation=(self), camera=(), microphone=(), payment=()"
+
+# No SPA fallback redirect here on purpose: viewport state lives in the URL fragment
+# (#zoom/lat/lon, see src/map/HashSync.tsx), so the server only ever sees "/".
