@@ -19,7 +19,7 @@ export const KARTVERKET_ATTRIBUTION =
 export const MAX_NATIVE_ZOOM = 18
 
 /** Leaflet upscales tiles beyond MAX_NATIVE_ZOOM rather than blanking out. */
-export const MAX_ZOOM = 20
+export const MAX_ZOOM = 19
 
 export interface Basemap {
   id: string
@@ -37,22 +37,10 @@ export const BASEMAPS: Basemap[] = [
     description: 'Standard topografisk norgeskart',
   },
   {
-    id: 'topograatone',
-    layer: 'topograatone',
-    label: 'Gråtone',
-    description: 'Dempet gråtonekart, egnet som bakgrunn for egne data',
-  },
-  {
     id: 'toporaster',
     layer: 'toporaster',
     label: 'Turkart',
     description: 'Rasterkart i tradisjonell papirkartstil',
-  },
-  {
-    id: 'sjokartraster',
-    layer: 'sjokartraster',
-    label: 'Sjøkart',
-    description: 'Sjøkart i raster — dekker kyst- og havområder',
   },
 ]
 
