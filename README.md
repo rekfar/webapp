@@ -44,6 +44,30 @@ Requires Node 20.11 or newer.
 - The viewport is mirrored into the URL as `#zoom/lat/lon`, so any view is
   shareable and survives reload — e.g. `http://localhost:5173/#12/59.9139/10.7522`
 
+## Brand
+
+First draft of the Rekfar identity, applied across the app chrome.
+
+| | |
+| --- | --- |
+| Typeface | **Space Grotesk** (Google Fonts, weights 400–700) — used throughout |
+| Icon mark | **Waypoint dots** — four dots climbing left-to-right, fading in towards the newest fix |
+| Lockup | Mark on a rust tile + the wordmark, in `src/brand/Logo.tsx` |
+
+| Token | Hex | Used for |
+| --- | --- | --- |
+| `--rf-cream` / `--rf-cream-2` | `#f6f3ec` / `#efeae0` | Panel surfaces, page background |
+| `--rf-charcoal` | `#22201c` | Body text |
+| `--rf-forest` / `--rf-forest-deep` | `#263b2e` / `#1b2b21` | Header, control icons |
+| `--rf-rust` | `#be6a45` | Accent — logo tile, selection, position marker |
+| `--rf-rust-ink` | `#a0522c` | Accent for text and focus rings (rust is too light on cream) |
+| `--rf-sage` | `#8a9a82` | Secondary text on forest |
+
+Tokens live at the top of `src/styles.css`. The same values are mirrored in
+`src/brand/colors.ts` for Leaflet vector styles, which cannot read CSS custom
+properties — change both together. The favicon in `public/favicon.svg` is the
+waypoint mark on a 64-unit grid; keep it in sync with `WaypointMark.tsx`.
+
 ## Map data
 
 Tiles come from Kartverket's open WMTS cache, following
@@ -70,7 +94,13 @@ attribution control and must stay there.
 ## Layout
 
 ```
+public/
+  favicon.svg       Waypoint mark on a rust tile
 src/
+  brand/
+    Logo.tsx        Mark + wordmark lockup
+    WaypointMark.tsx
+    colors.ts       Palette for non-CSS consumers (Leaflet vector styles)
   config/
     basemaps.ts     Kartverket WMTS layers, URL builder, zoom limits, attribution
     view.ts         Default centre/zoom and the bounds the viewport is kept within
