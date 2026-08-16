@@ -37,22 +37,10 @@ export const BASEMAPS: Basemap[] = [
     description: 'Standard topografisk norgeskart',
   },
   {
-    id: 'topograatone',
-    layer: 'topograatone',
-    label: 'Gråtone',
-    description: 'Dempet gråtonekart, egnet som bakgrunn for egne data',
-  },
-  {
     id: 'toporaster',
     layer: 'toporaster',
     label: 'Turkart',
     description: 'Rasterkart i tradisjonell papirkartstil',
-  },
-  {
-    id: 'sjokartraster',
-    layer: 'sjokartraster',
-    label: 'Sjøkart',
-    description: 'Sjøkart i raster — dekker kyst- og havområder',
   },
 ]
 

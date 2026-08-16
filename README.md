@@ -56,7 +56,7 @@ https://cache.kartverket.no/v1/wmts/1.0.0/{layer}/default/{matrixSet}/{z}/{y}/{x
 Note that the RESTful WMTS path is `TileMatrix/TileRow/TileCol` — the **row (y)
 comes before the column (x)**.
 
-Layers used: `topo`, `topograatone`, `toporaster`, `sjokartraster`.
+Layers used: `topo`, `toporaster`.
 The `webmercator` matrix set is published for **zoom 0–18**; z19 and above return
 HTTP 400, so `maxNativeZoom` is pinned to 18 and Leaflet upscales beyond that.
 
@@ -98,5 +98,4 @@ Leaflet's own controls do.
 - Kartverket's cache only covers Norwegian territory. The viewport is loosely
   constrained to Norway (Svalbard and Jan Mayen included) rather than exposing an
   empty world map.
-- `sjokartraster` covers coastal and sea areas only; inland areas render blank.
 - Basemap choice is component state and is not persisted in the URL.
