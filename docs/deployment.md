@@ -44,5 +44,21 @@ builds fine on Node 20.11.
   from a domain root. Deploying under a subpath would need `base` set in
   `vite.config.ts`.
 
-`netlify.toml` holds cache and security headers only — no build command, by
-design. The `Permissions-Policy` header there must keep `geolocation=(self)`.
+`netlify.toml` holds cache headers, security headers and the API proxy — no build
+command, by design. The `Permissions-Policy` header there must keep
+`geolocation=(self)`.
+
+## The API proxy
+
+`netlify.toml` rewrites `/api/*` to the API's `/v1/*` on Azure Container Apps with
+`status = 200`, which proxies rather than redirects. The client therefore calls its
+own origin and CORS never enters the deployed path — see [api.md](api.md).
+
+Two consequences for a deploy:
+
+- **The API hostname is in `netlify.toml`.** If the Container App is recreated, its
+  FQDN changes and that line has to change with it. The symptom is peaks failing to
+  load while the rest of the site is fine.
+- **The first request after an idle period may fail at the edge.** The API scales to
+  zero and its database auto-pauses; a resume can outlast Netlify's upstream proxy
+  timeout. The map reports it and offers a retry rather than appearing broken.

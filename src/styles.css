@@ -131,6 +131,12 @@ body {
   position: absolute;
   z-index: 1000;
   pointer-events: auto;
+  /* Overlays hold more than one child now — the peaks status sits above the
+     coordinate readout — so stack them rather than letting them overlap. */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
 
 .map-overlay[data-position='top-left'] {
@@ -264,6 +270,99 @@ body {
   background: var(--border);
 }
 
+/* ---------- Peaks ---------- */
+
+.peaks-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: min(22rem, calc(100vw - 1.5rem));
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+
+.peaks-status[data-state='error'] {
+  border-color: rgba(160, 82, 44, 0.4);
+  color: var(--text);
+}
+
+.peaks-status__retry {
+  flex: none;
+  padding: 0.1875rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface-hover);
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.peaks-status__retry:hover {
+  border-color: var(--accent);
+}
+
+.peak-popup {
+  min-width: 10rem;
+}
+
+.peak-popup__name {
+  margin: 0 0 0.375rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+/* A two-column grid rather than the browser's indented <dl>, so label and value
+   line up the way the status bar's pairs do. */
+.peak-popup__facts {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: start;
+  gap: 0.125rem 0.75rem;
+  margin: 0;
+}
+
+.peak-popup__facts dt {
+  font-size: 0.625rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  align-self: center;
+}
+
+.peak-popup__facts dd {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* Leaflet colours every anchor inside its container, and `.leaflet-container a`
+   outranks a bare class — so match its specificity to keep the brand rust. */
+.leaflet-container a.peak-popup__link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  color: var(--accent);
+  font-size: 0.75rem;
+}
+
+.peak-popup__attribution {
+  margin: 0.5rem 0 0;
+  padding-top: 0.375rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.625rem;
+  color: var(--text-muted);
+}
+
 /* ---------- Leaflet tweaks ----------
    Leaflet ships its own chrome; restyle it rather than replacing it, so the
    zoom, scale and attribution controls read as part of the same kit. */
@@ -327,12 +426,40 @@ body {
   box-shadow: var(--shadow);
 }
 
+.leaflet-popup-content-wrapper {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-hover);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.leaflet-popup-content {
+  margin: 0.75rem 0.875rem;
+}
+
+.leaflet-popup-tip {
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  padding: 0.375rem 0.5rem 0 0;
+  color: var(--text-muted);
+}
+
+.leaflet-container a.leaflet-popup-close-button:hover {
+  color: var(--text);
+}
+
 @media (max-width: 30rem) {
   .basemap-switcher__legend {
     display: none;
   }
 
-  .map-overlay[data-position='bottom-left'] {
+  /* The coordinate readout is what does not earn its space on a phone. The
+     peaks status still has to be readable, so hide the bar, not the overlay. */
+  .status-bar {
     display: none;
   }
 
