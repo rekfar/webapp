@@ -23,6 +23,9 @@ import { BasemapSwitcher } from './BasemapSwitcher'
 import { HashSync, parseHash } from './HashSync'
 import { LocateControl } from './LocateControl'
 import { Overlay } from './Overlay'
+import { PeaksLayer } from './PeaksLayer'
+import { PeaksProvider } from './PeaksProvider'
+import { PeaksStatus } from './PeaksStatus'
 import { StatusBar } from './StatusBar'
 
 export function MapView() {
@@ -48,6 +51,9 @@ export function MapView() {
       maxBounds={MAX_BOUNDS}
       maxBoundsViscosity={0.75}
       zoomControl={false}
+      // An extent can hold up to PEAKS_LIMIT peak markers. On canvas they are one
+      // element between them; as SVG they would be that many DOM nodes.
+      preferCanvas
     >
       {/*
         `key` forces a fresh TileLayer when the basemap changes, so tiles from
@@ -80,16 +86,22 @@ export function MapView() {
       <ScaleControl position="bottomleft" imperial={false} />
       <HashSync />
 
+      {/* The provider owns one fetch loop; the layer draws it and the chip reports it. */}
+      <PeaksProvider>
+        <PeaksLayer />
+
+        <Overlay position="bottom-left">
+          <PeaksStatus />
+          <StatusBar />
+        </Overlay>
+      </PeaksProvider>
+
       <Overlay position="top-left">
         <BasemapSwitcher value={basemapId} onChange={setBasemapId} />
       </Overlay>
 
       <Overlay position="right">
         <LocateControl onLocated={setUserPosition} />
-      </Overlay>
-
-      <Overlay position="bottom-left">
-        <StatusBar />
       </Overlay>
     </MapContainer>
   )

@@ -20,5 +20,22 @@
     # Removing it silently breaks the "Vis min posisjon" button.
     Permissions-Policy = "geolocation=(self), camera=(), microphone=(), payment=()"
 
+# The Rekfar API, proxied onto this site's own origin. `status = 200` is what makes
+# this a rewrite rather than a redirect: the browser only ever sees /api/..., so the
+# requests are same-origin and CORS drops out of the deployed path entirely — no
+# preflights, and no origin list that can break the client in production while every
+# curl and integration test still passes. The API keeps its CORS configuration for
+# callers that reach it directly, such as a future native client.
+#
+# `force` is not needed: nothing static is published under /api/.
+#
+# Note the cold start. The API scales to zero and its database auto-pauses, so the
+# first request after an idle period can outlast Netlify's upstream timeout and fail
+# at the edge — see docs/api.md.
+[[redirects]]
+  from = "/api/*"
+  to = "https://rekfar-api.salmonocean-b5a2e037.swedencentral.azurecontainerapps.io/v1/:splat"
+  status = 200
+
 # No SPA fallback redirect here on purpose: viewport state lives in the URL fragment
 # (#zoom/lat/lon, see src/map/HashSync.tsx), so the server only ever sees "/".
