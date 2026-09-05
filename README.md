@@ -3,10 +3,13 @@
 MVP for an interactive map built on open map tiles from [Kartverket](https://www.kartverket.no/).
 Intended as the foundation for further development, not as a finished product.
 
-Vite 6 · React 19 + TypeScript (strict) · Leaflet 1.9 via react-leaflet 5.
-Tiles come from Kartverket's open cache, which needs no API key. Peaks come from
-the [Rekfar API](https://github.com/rekfar/backend) — reached through a proxy at
-`/api`, so no environment configuration is required to run the app either.
+Vite 6 · React 19 + TypeScript (strict) · Leaflet 1.9 via react-leaflet 5 ·
+react-router 8 · react-i18next (`nb-NO`).
+Tiles come from Kartverket's open cache, which needs no API key. Peaks and
+accounts come from the [Rekfar API](https://github.com/rekfar/backend) — reached
+through a proxy at `/api`, so no environment configuration is required to run the
+app either. Sign-in is a one-time code emailed to the user; the product has no
+password field ([ADR-0017](https://github.com/rekfar/docs/blob/main/adr/0017-passwordless-email-sign-in.md)).
 
 ## Getting started
 
@@ -24,7 +27,8 @@ The dev server runs on http://localhost:5173. Requires Node 20.11 or newer;
 The map draws its peaks from the API, which the dev server proxies at `/api`.
 Run [rekfar/backend](https://github.com/rekfar/backend) on its documented port
 (`dotnet run --project src/Rekfar.Api`, which listens on 5199) and they appear;
-without it the map still works and says it could not reach the API. See
+without it the map still works and says it could not reach the API. Signing in
+needs that API running — the code is emailed by it. See
 [docs/api.md](docs/api.md) to point at a different one.
 
 | Script | Purpose |
@@ -49,6 +53,11 @@ without it the map still works and says it could not reach the API. See
 - Two Kartverket basemaps — topographic and raster hiking map
 - Mountain peaks for the current map extent, refetched as you pan and zoom,
   with elevation, primærfaktor and an ut.no link a click away
+- Sign in with a one-time code by email — no password. The same screen registers
+  a new account, and the session survives a reload
+- A profile with display name and language, and sign-out both for this device and
+  for every device at once
+- Norwegian throughout, with every string in an i18n layer
 - Zoom, scale bar and metric distance readout
 - Live cursor / centre coordinates (WGS 84) and zoom level
 - "Show my position" via the browser geolocation API

@@ -25,23 +25,16 @@ export interface Basemap {
   id: string
   /** WMTS layer identifier at cache.kartverket.no */
   layer: string
-  label: string
-  description: string
 }
 
+/**
+ * The layers offered, as facts about the service only. Their names and
+ * descriptions are copy, so they live in the i18n layer under
+ * `map.basemaps.<id>` — adding a layer here means adding those two keys.
+ */
 export const BASEMAPS: Basemap[] = [
-  {
-    id: 'topo',
-    layer: 'topo',
-    label: 'Topografisk',
-    description: 'Standard topografisk norgeskart',
-  },
-  {
-    id: 'toporaster',
-    layer: 'toporaster',
-    label: 'Turkart',
-    description: 'Rasterkart i tradisjonell papirkartstil',
-  },
+  { id: 'topo', layer: 'topo' },
+  { id: 'toporaster', layer: 'toporaster' },
 ]
 
 export const DEFAULT_BASEMAP_ID = BASEMAPS[0].id

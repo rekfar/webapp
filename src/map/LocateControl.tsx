@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMap, useMapEvents } from 'react-leaflet'
 import type { LatLng } from 'leaflet'
 
@@ -10,6 +11,7 @@ type LocateState = 'idle' | 'locating' | 'error'
  */
 export function LocateControl({ onLocated }: { onLocated: (latlng: LatLng) => void }) {
   const map = useMap()
+  const { t } = useTranslation()
   const [state, setState] = useState<LocateState>('idle')
 
   useMapEvents({
@@ -25,12 +27,7 @@ export function LocateControl({ onLocated }: { onLocated: (latlng: LatLng) => vo
     map.locate({ setView: true, maxZoom: 14, enableHighAccuracy: true })
   }
 
-  const label =
-    state === 'locating'
-      ? 'Finner posisjon…'
-      : state === 'error'
-        ? 'Fant ikke posisjon — prøv igjen'
-        : 'Vis min posisjon'
+  const label = t(`map.locate.${state}`)
 
   return (
     <button

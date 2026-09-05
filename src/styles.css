@@ -69,6 +69,45 @@ body {
   flex: none;
 }
 
+/* The lockup is a link to the map on every route. It must not look like one:
+   the header is a brand bar, not a navigation list. */
+.app__brand {
+  display: flex;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  flex: none;
+}
+
+.app__brand:focus-visible {
+  outline: 2px solid var(--rf-cream);
+  outline-offset: 3px;
+}
+
+.app__account {
+  margin-left: auto;
+  padding: 0.3125rem 0.75rem;
+  border: 1px solid rgba(246, 243, 236, 0.28);
+  border-radius: 999px;
+  color: var(--rf-cream);
+  font-size: 0.8125rem;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 12rem;
+  flex: none;
+}
+
+.app__account:hover {
+  background: rgba(246, 243, 236, 0.12);
+}
+
+.app__account:focus-visible {
+  outline: 2px solid var(--rf-cream);
+  outline-offset: 2px;
+}
+
 .app__divider {
   width: 1px;
   height: 1.125rem;
@@ -115,6 +154,229 @@ body {
   font-size: 1.125rem;
   font-weight: 600;
   letter-spacing: -0.02em;
+}
+
+/* ---------- Pages ----------
+   Everything that is not the map: a single readable column on the cream ground,
+   scrolling inside the shell rather than moving the header off screen. */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.page {
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: clamp(1rem, 4vh, 2.5rem) max(1rem, env(safe-area-inset-right))
+    calc(2rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+}
+
+.page__status {
+  margin: 2rem auto;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.card {
+  width: min(28rem, 100%);
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-hover);
+  box-shadow: var(--shadow);
+}
+
+.card__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.card__lead {
+  margin: 0 0 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.card__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.card__row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.375rem;
+  padding: 0.875rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.card__hint {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+/* ---------- Forms ---------- */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.field__label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+.field__input {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--rf-cream);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9375rem;
+}
+
+.field__input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* The code is short, typed once, and read back to check it — spaced out and
+   tabular so a transposed digit is visible before it is submitted. */
+.field__input--code {
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.35em;
+}
+
+.field__readonly {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.field__hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.form-message {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.form-message--error {
+  color: #b3261e;
+}
+
+.form-message--notice {
+  color: var(--rf-forest);
+}
+
+/* ---------- Page buttons ----------
+   `.control-button` is the square map chrome; these are the text buttons that
+   only exist off the map. */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--rf-cream);
+  border-color: var(--accent);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.button--primary {
+  background: var(--rf-forest);
+  border-color: var(--rf-forest-deep);
+  color: var(--rf-cream);
+}
+
+.button--primary:hover:not(:disabled) {
+  background: var(--rf-forest-deep);
+  border-color: var(--rf-forest-deep);
+  color: var(--rf-cream);
+}
+
+.button--danger {
+  border-color: rgba(160, 82, 44, 0.5);
+  color: var(--accent);
+}
+
+.button--ghost {
+  background: transparent;
+}
+
+.button--link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 0.8125rem;
+  text-decoration: underline;
+}
+
+.button--link:hover:not(:disabled) {
+  background: none;
+  color: var(--rf-forest);
 }
 
 /* ---------- Map ---------- */

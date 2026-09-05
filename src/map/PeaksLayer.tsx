@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CircleMarker, Popup, Tooltip, useMap } from 'react-leaflet'
+import type { TFunction } from 'i18next'
 
 import type { PeakFeature } from '../api/peaks'
 import { KARTVERKET_ATTRIBUTION } from '../config/basemaps'
@@ -41,12 +43,13 @@ function usePeakAttribution(attribution: string | null) {
 }
 
 /** `2469 moh.`, or null where the height has not been sampled yet. */
-function elevationLabel(peak: PeakFeature): string | null {
+function elevationLabel(peak: PeakFeature, t: TFunction): string | null {
   const { elevationMeters } = peak.properties
-  return elevationMeters === null ? null : `${elevationMeters} moh.`
+  return elevationMeters === null ? null : t('map.peaks.elevationValue', { meters: elevationMeters })
 }
 
 function PeakPopup({ peak, attribution }: { peak: PeakFeature; attribution: string | null }) {
+  const { t } = useTranslation()
   const { name, elevationMeters, prominenceMeters, utnoUrl } = peak.properties
 
   return (
@@ -54,20 +57,24 @@ function PeakPopup({ peak, attribution }: { peak: PeakFeature; attribution: stri
       <h2 className="peak-popup__name">{name}</h2>
 
       <dl className="peak-popup__facts">
-        <dt>Høyde</dt>
-        <dd>{elevationMeters === null ? 'Ukjent' : `${elevationMeters} moh.`}</dd>
+        <dt>{t('map.peaks.elevation')}</dt>
+        <dd>
+          {elevationMeters === null
+            ? t('map.peaks.elevationUnknown')
+            : t('map.peaks.elevationValue', { meters: elevationMeters })}
+        </dd>
 
         {prominenceMeters !== null && (
           <>
-            <dt>Primærfaktor</dt>
-            <dd>{prominenceMeters} m</dd>
+            <dt>{t('map.peaks.prominence')}</dt>
+            <dd>{t('map.peaks.prominenceValue', { meters: prominenceMeters })}</dd>
           </>
         )}
       </dl>
 
       {utnoUrl && (
         <a className="peak-popup__link" href={utnoUrl} target="_blank" rel="noreferrer">
-          Les mer på ut.no
+          {t('map.peaks.utnoLink')}
         </a>
       )}
 
@@ -90,6 +97,7 @@ function PeakPopup({ peak, attribution }: { peak: PeakFeature; attribution: stri
  * way round. Swapping them here, once, is the whole of the conversion.
  */
 export function PeaksLayer() {
+  const { t } = useTranslation()
   const { peaks, attribution } = usePeaks()
 
   usePeakAttribution(attribution)
@@ -98,7 +106,7 @@ export function PeaksLayer() {
     <>
       {peaks.map((peak) => {
         const [longitude, latitude] = peak.geometry.coordinates
-        const elevation = elevationLabel(peak)
+        const elevation = elevationLabel(peak, t)
 
         return (
           <CircleMarker

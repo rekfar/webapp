@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   CircleMarker,
   MapContainer,
@@ -29,6 +30,7 @@ import { PeaksStatus } from './PeaksStatus'
 import { StatusBar } from './StatusBar'
 
 export function MapView() {
+  const { t } = useTranslation()
   const [basemapId, setBasemapId] = useState(DEFAULT_BASEMAP_ID)
   const [userPosition, setUserPosition] = useState<LatLng | null>(null)
 
@@ -77,7 +79,7 @@ export function MapView() {
           pathOptions={{ color: '#ffffff', weight: 2, fillColor: BRAND.rust, fillOpacity: 1 }}
         >
           <Tooltip direction="top" offset={[0, -8]}>
-            Din posisjon
+            {t('map.youAreHere')}
           </Tooltip>
         </CircleMarker>
       )}

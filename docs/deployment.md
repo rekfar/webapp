@@ -37,16 +37,20 @@ builds fine on Node 20.11.
 
 - **HTTPS is mandatory.** The geolocation API is secure-context only, so "Show my
   position" silently fails over plain HTTP. Netlify provisions TLS automatically.
-- **No SPA fallback redirect is needed.** The viewport lives in the URL _fragment_,
-  so the server only ever sees a request for `/`. A `/* /index.html 200` rule
-  would be dead config.
+- **The SPA fallback rewrite is load-bearing.** The client routes on the path
+  (`/logg-inn`, `/profil`), and the only document this site publishes is
+  `index.html` — so without `/* /index.html 200` in `netlify.toml`, a reload or a
+  shared link on any route but `/` is a 404 from Netlify's static server and the
+  router never runs. It must stay *below* the `/api/*` rule: Netlify applies the
+  first match, and a catch-all above it would swallow the API proxy. (The map's
+  viewport still lives in the URL fragment, which no server ever sees.)
 - Assets are referenced from the root (`/assets/…`), so the site must be served
   from a domain root. Deploying under a subpath would need `base` set in
   `vite.config.ts`.
 
-`netlify.toml` holds cache headers, security headers and the API proxy — no build
-command, by design. The `Permissions-Policy` header there must keep
-`geolocation=(self)`.
+`netlify.toml` holds cache headers, security headers, the API proxy and the SPA
+fallback — no build command, by design. The `Permissions-Policy` header there must
+keep `geolocation=(self)`.
 
 ## The API proxy
 

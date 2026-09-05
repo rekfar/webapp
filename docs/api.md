@@ -27,9 +27,66 @@ To bypass the proxy, set `VITE_API_BASE_URL` to an absolute base **including the
 (see `.env.example`). The API's development configuration already allows
 `http://localhost:5173`, so this works locally without touching the backend.
 
+## Every request carries the session
+
+`src/api/client.ts` issues every call, and decides three things once so no call
+site has to:
+
+- **`credentials: 'include'`.** The session is an `HttpOnly` cookie
+  ([ADR-0017](https://github.com/rekfar/docs/blob/main/adr/0017-passwordless-email-sign-in.md)),
+  so the browser attaches it and the client never sees it. Through the proxies
+  above the call is same-origin and this is free; through `VITE_API_BASE_URL` it
+  is cross-origin, and the API has to answer with
+  `Access-Control-Allow-Credentials` (ASP.NET's `.AllowCredentials()` beside its
+  origin list) or the browser drops the response — for `/peaks` too.
+- **An anti-forgery header on state-changing calls.** A cookie the browser sends
+  by itself is exactly what makes CSRF possible, so `POST` and `PATCH` carry
+  `X-Requested-With: XMLHttpRequest`, which a cross-site form cannot set, plus
+  `X-XSRF-TOKEN` echoing the `XSRF-TOKEN` cookie where the API issues one.
+- **Failures are `ApiError`.** RFC 9457 `problem+json` parsed into a status, a
+  `detail`, the `traceId` that matches the server log, and `Retry-After` in
+  seconds on a 429.
+
+## Accounts
+
+`SignInPage` and `ProfilePage` use these; the contract is
+[rekfar/backend#8](https://github.com/rekfar/backend/issues/8), and the notes are
+what this client assumes of it.
+
+| Endpoint | Used for |
+| --- | --- |
+| `POST /api/auth/code` | Send a one-time code to an email address |
+| `POST /api/auth/verify` | Exchange the code for a session |
+| `POST /api/auth/signout` | End this device's session |
+| `POST /api/auth/signout-all` | End every session for the account |
+| `GET /api/me` | The profile — and the answer to "am I signed in?" |
+| `PATCH /api/me` | Display name and locale |
+
+- **`GET /me` answers 401 for a visitor**, and that is not an error: it is how
+  the app learns it is anonymous. Every *other* 401 is treated as a session that
+  expired, and drops the user back to sign-in.
+- **`POST /auth/code` answers identically for known and unknown addresses.** The
+  UI is written so it cannot leak the difference either: registration and login
+  are the same screen, and nothing in the copy says which one happened.
+- **`POST /auth/verify` may return the profile or just set the cookie.** The
+  client uses the body when there is one and falls back to `GET /me`.
+- **Why a code was rejected decides the wording**, so `classifyCodeRejection` in
+  `src/api/auth.ts` reads it from the problem document's `code` member —
+  `code_invalid`, `code_expired`, `code_used`, `too_many_attempts` — and from the
+  status when there is none: `410` for a code that is gone, `429` or `423` for
+  the attempt cap, other 4xx for a wrong code. A code that has expired and one
+  that has been guessed at too often both mean "ask for a new one", which a
+  generic failure would not tell anyone.
+- **`Retry-After` on a 429 from `/auth/code` sets the resend cooldown**, so the
+  button waits exactly as long as the server asked rather than guessing. Without
+  one it waits 60 seconds.
+
+`PATCH /me` sends `displayName: null` for an empty field — "no display name",
+rather than an empty string the API would have to interpret.
+
 ## `GET /api/peaks`
 
-The only endpoint the client uses. Full contract in the backend's
+The map's endpoint. Full contract in the backend's
 [docs/api.md](https://github.com/rekfar/backend/blob/main/docs/api.md); what matters here:
 
 - **`bbox` is `west,south,east,north`** in WGS84 degrees — the ordering
@@ -68,3 +125,7 @@ auto-pause delay, raise `minReplicas`, or add a warm-up ping) and is tracked the
 `minElevationMeters` is supported by the endpoint and typed in `src/api/peaks.ts`, but no
 UI asks for it. Everything else — trips, plans, wishlist, statistics — is unbuilt on both
 sides.
+
+FR-ACC-4 (default privacy) is a column on the account the profile screen does not
+yet show, and FR-ACC-5 (delete my account) has no endpoint. Both are out of this
+slice deliberately.
