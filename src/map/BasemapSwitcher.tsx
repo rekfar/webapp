@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { BASEMAPS } from '../config/basemaps'
 
 interface Props {
@@ -6,14 +8,16 @@ interface Props {
 }
 
 export function BasemapSwitcher({ value, onChange }: Props) {
+  const { t } = useTranslation()
+
   return (
     <fieldset className="basemap-switcher">
-      <legend className="basemap-switcher__legend">Kartlag</legend>
+      <legend className="basemap-switcher__legend">{t('map.basemapLegend')}</legend>
       {BASEMAPS.map((basemap) => (
         <label
           key={basemap.id}
           className="basemap-switcher__option"
-          title={basemap.description}
+          title={t(`map.basemaps.${basemap.id}.description`)}
           data-selected={basemap.id === value}
         >
           <input
@@ -23,7 +27,7 @@ export function BasemapSwitcher({ value, onChange }: Props) {
             checked={basemap.id === value}
             onChange={() => onChange(basemap.id)}
           />
-          <span>{basemap.label}</span>
+          <span>{t(`map.basemaps.${basemap.id}.label`)}</span>
         </label>
       ))}
     </fieldset>

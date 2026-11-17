@@ -37,5 +37,18 @@
   to = "https://rekfar-api.salmonocean-b5a2e037.swedencentral.azurecontainerapps.io/v1/:splat"
   status = 200
 
-# No SPA fallback redirect here on purpose: viewport state lives in the URL fragment
-# (#zoom/lat/lon, see src/map/HashSync.tsx), so the server only ever sees "/".
+# The SPA fallback. The client routes on the path now (/logg-inn, /profil), and the
+# only file this site publishes is index.html — so without this rule a reload or a
+# shared link on any route but "/" is a 404 from Netlify's static server, and the
+# router never gets to run. `status = 200` keeps the address the visitor typed.
+#
+# It must stay below the /api rule: Netlify applies the first matching redirect, and
+# a catch-all above it would swallow the API proxy.
+#
+# The map's viewport still lives in the URL fragment (#zoom/lat/lon, see
+# src/map/HashSync.tsx), which a server never sees — that is why the map and the
+# router can share a URL without either rewriting the other's half.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
