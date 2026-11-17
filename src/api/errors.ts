@@ -3,6 +3,16 @@ import type { TFunction } from 'i18next'
 import { ApiError } from './client'
 
 /**
+ * A wait, in whichever unit reads naturally. The API's attempt cap is counted
+ * in minutes, so "vent 300 sekunder" is both correct and nothing anyone says.
+ */
+export function formatWait(seconds: number, t: TFunction): string {
+  return seconds >= 120
+    ? t('common.minutes', { count: Math.ceil(seconds / 60) })
+    : t('common.seconds', { count: seconds })
+}
+
+/**
  * A failed request in one Norwegian sentence.
  *
  * The three cases worth distinguishing everywhere are no answer at all, the
@@ -16,7 +26,7 @@ export function describeApiError(error: unknown, t: TFunction): string {
 
   if (error.status === 429) {
     return error.retryAfterSeconds
-      ? t('errors.rateLimitedIn', { seconds: error.retryAfterSeconds })
+      ? t('errors.rateLimitedIn', { wait: formatWait(error.retryAfterSeconds, t) })
       : t('errors.rateLimited')
   }
 

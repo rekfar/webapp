@@ -1,11 +1,10 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, useLocation } from 'react-router'
+import type { TFunction } from 'i18next'
 
-import { classifyCodeRejection, requestSignInCode, verifySignInCode } from '../api/auth'
-import type { CodeRejection } from '../api/auth'
-import { describeApiError, retryAfterSeconds } from '../api/errors'
-import type { UserProfile } from '../api/me'
+import { classifySignInFailure, requestSignInCode, verifySignInCode } from '../api/auth'
+import { describeApiError, formatWait, retryAfterSeconds } from '../api/errors'
 import { useSession } from '../auth/SessionProvider'
 import { usePageTitle } from '../ui/usePageTitle'
 import { PATHS } from './paths'
@@ -21,17 +20,6 @@ import { PATHS } from './paths'
 /** How long the resend button stays disabled when the API sets no Retry-After. */
 const RESEND_COOLDOWN_SECONDS = 60
 
-/**
- * The two rejections that deserve their own wording rather than a generic
- * failure: a code that is gone, and one that has been guessed at too often.
- * Both mean "ask for a new one", which "noe gikk galt" would not tell anyone.
- */
-const CODE_ERROR_KEYS: Record<Exclude<CodeRejection, 'unknown'>, string> = {
-  invalid: 'signIn.errors.codeInvalid',
-  expired: 'signIn.errors.codeExpired',
-  tooManyAttempts: 'signIn.errors.tooManyAttempts',
-}
-
 /** Cheap sanity check; the address is confirmed by the code actually arriving. */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -44,19 +32,38 @@ function intendedDestination(state: unknown): string | null {
   return typeof from === 'string' && from.startsWith('/') ? from : null
 }
 
-/**
- * Where a signed-in visitor belongs: the route the guard sent them away from,
- * or — for an account with no display name yet, which is what a registration
- * looks like from here — the profile, to finish setting it up (UC-1).
- */
-function destinationFor(state: unknown, user: UserProfile | null): string {
-  return intendedDestination(state) ?? (user?.displayName?.trim() ? PATHS.map : PATHS.profile)
+/*
+  Where a signed-in visitor belongs: the route the guard sent them away from,
+  or the map. There is deliberately no "is this a new account?" branch — the API
+  answers a first verification exactly as it answers a returning one, and seeds
+  the display name from the address, so the client has no signal to read. UC-1's
+  "set display name and locale" is the profile, one click away in the header.
+*/
+
+/** One sentence for a refused sign-in, in the terms the API allows us to use. */
+function signInFailureMessage(cause: unknown, t: TFunction): string {
+  switch (classifySignInFailure(cause)) {
+    case 'rejected':
+      return t('signIn.errors.codeRejected')
+    case 'tooManyAttempts': {
+      const seconds = retryAfterSeconds(cause)
+      return seconds
+        ? t('signIn.errors.tooManyAttemptsIn', { wait: formatWait(seconds, t) })
+        : t('signIn.errors.tooManyAttempts')
+    }
+    // A 400 here is a malformed address or a missing code, which the fields
+    // above check for — so it means the two disagree, not that the code failed.
+    case 'malformed':
+      return t('signIn.errors.codeRequired')
+    default:
+      return describeApiError(cause, t)
+  }
 }
 
 export function SignInPage() {
   const { t } = useTranslation()
   const location = useLocation()
-  const { status, user, adopt, refresh } = useSession()
+  const { status, adopt } = useSession()
 
   usePageTitle(t('app.documentTitle.signIn'))
 
@@ -88,7 +95,7 @@ export function SignInPage() {
   // a verified code leaves this page: adopting the profile flips the status,
   // and this redirect is what moves them on. One route out, not two racing.
   if (status === 'signedIn') {
-    return <Navigate to={destinationFor(location.state, user)} replace />
+    return <Navigate to={intendedDestination(location.state) ?? PATHS.map} replace />
   }
 
   async function sendCode(resent: boolean) {
@@ -107,13 +114,20 @@ export function SignInPage() {
       setCooldown(RESEND_COOLDOWN_SECONDS)
       if (resent) setNotice(t('signIn.resent'))
     } catch (cause) {
-      // The request endpoint is rate-limited per address and per caller. When
+      // The request endpoint is rate-limited per caller and per address. When
       // it says how long to wait, the resend button waits exactly that long —
       // and a failure that says nothing leaves any cooldown already running
       // alone rather than freeing the button that just failed.
       const wait = retryAfterSeconds(cause)
       if (wait) setCooldown(wait)
-      setError(describeApiError(cause, t))
+
+      // The only thing /auth/code refuses outright is an address that is not
+      // one, and it says so in English. Everything else it accepts in silence.
+      setError(
+        classifySignInFailure(cause) === 'malformed'
+          ? t('signIn.errors.emailInvalid')
+          : describeApiError(cause, t),
+      )
     } finally {
       setPending(false)
     }
@@ -128,19 +142,12 @@ export function SignInPage() {
     setNotice(null)
 
     try {
-      const profile = await verifySignInCode(email.trim(), entered)
-
       // The session is a cookie now; there is no token to keep. Adopting the
-      // profile the endpoint returned — or reading it back, which is the
-      // authoritative answer either way — is what signs the app in, and the
-      // redirect above does the rest.
-      if (profile) adopt(profile)
-      else await refresh()
+      // profile the endpoint returns is what signs the app in, and the redirect
+      // above does the rest.
+      adopt(await verifySignInCode(email.trim(), entered))
     } catch (cause) {
-      const rejection = classifyCodeRejection(cause)
-      setError(
-        rejection === 'unknown' ? describeApiError(cause, t) : t(CODE_ERROR_KEYS[rejection]),
-      )
+      setError(signInFailureMessage(cause, t))
     } finally {
       setPending(false)
     }

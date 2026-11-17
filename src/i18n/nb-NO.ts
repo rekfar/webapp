@@ -28,6 +28,11 @@ export const nbNO = {
   },
 
   common: {
+    /* i18next plural suffixes; nb-NO uses _one and _other. */
+    seconds_one: '{{count}} sekund',
+    seconds_other: '{{count}} sekunder',
+    minutes_one: '{{count}} minutt',
+    minutes_other: '{{count}} minutter',
     retry: 'Prøv igjen',
     cancel: 'Avbryt',
     toMap: 'Til kartet',
@@ -62,19 +67,29 @@ export const nbNO = {
     changeEmail: 'Feil adresse? Endre e-postadresse',
     resend: 'Send koden på nytt',
     resendIn: 'Send koden på nytt (om {{seconds}} s)',
-    resent: 'Vi har sendt en ny kode.',
+    /*
+      Not "en ny kode": a code asked for again within the same few minutes is
+      the same code, because it is derived from the clock rather than stored.
+    */
+    resent: 'Vi har sendt koden på nytt.',
 
     errors: {
       emailRequired: 'Skriv inn e-postadressen din.',
       emailInvalid: 'Skriv inn en gyldig e-postadresse.',
       codeRequired: 'Skriv inn koden fra e-posten.',
-      /** Wrong code, but the code itself is still alive. */
-      codeInvalid: 'Koden stemmer ikke. Sjekk at du har skrevet den riktig.',
-      /** Expired or already used — a new code is the only way forward. */
-      codeExpired: 'Koden er utløpt eller allerede brukt. Be om en ny kode.',
-      /** The attempt cap was hit, so the code was thrown away. */
+      /*
+        The API answers 401 the same way for a wrong code, an expired one, one
+        already used, and an address with no account — it will not say which,
+        because that would tell an anonymous caller who has an account here. So
+        this one line has to carry all of them, and both ways out.
+      */
+      codeRejected:
+        'Koden er ikke gyldig. Den kan være feil, utløpt eller allerede brukt — sjekk at du har skrevet den riktig, eller be om en ny kode.',
+      /** The address has used up its guesses; a new code is the way back in. */
       tooManyAttempts:
-        'For mange forsøk på denne koden. Vi har sperret den — be om en ny kode og prøv igjen.',
+        'For mange forsøk på denne adressen. Vent litt, og be så om en ny kode.',
+      tooManyAttemptsIn:
+        'For mange forsøk på denne adressen. Vent {{wait}}, og be så om en ny kode.',
     },
   },
 
@@ -86,7 +101,8 @@ export const nbNO = {
     emailHint: 'E-postadressen er innloggingen din, og kan ikke endres her.',
     displayNameLabel: 'Visningsnavn',
     displayNamePlaceholder: 'Navnet andre ser',
-    displayNameHint: 'Kan stå tomt.',
+    displayNameHint: 'Mellom 1 og 80 tegn. Nye kontoer får navn etter e-postadressen.',
+    displayNameInvalid: 'Visningsnavnet må ha mellom 1 og 80 tegn.',
     localeLabel: 'Språk',
     save: 'Lagre',
     saving: 'Lagrer …',
@@ -124,7 +140,7 @@ export const nbNO = {
     /** fetch() rejects with a TypeError when the request never got an answer. */
     network: 'Fikk ikke kontakt med API-et.',
     rateLimited: 'For mange forespørsler. Vent litt og prøv igjen.',
-    rateLimitedIn: 'For mange forespørsler. Prøv igjen om {{seconds}} sekunder.',
+    rateLimitedIn: 'For mange forespørsler. Prøv igjen om {{wait}}.',
     /*
       The likeliest 5xx is not a bug but a cold start: the API scales to zero
       and its database auto-pauses, so the first request after an idle period

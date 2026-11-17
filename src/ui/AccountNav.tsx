@@ -25,6 +25,8 @@ export function AccountNav() {
     )
   }
 
+  // Always set — seeded from the address when the account is created — but the
+  // header still falls back rather than rendering an empty chip if it is not.
   const name = user?.displayName?.trim()
 
   return (

@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../config/api'
+import { ANTI_FORGERY_HEADER, API_BASE_URL } from '../config/api'
 
 /**
  * One place where this client talks to the Rekfar API.
@@ -14,14 +14,13 @@ export class ApiError extends Error {
   readonly detail: string | undefined
   /** Matches the server log line for this request; useless once discarded. */
   readonly traceId: string | undefined
-  /** From `Retry-After` on a 429, in seconds. */
-  readonly retryAfterSeconds: number | undefined
   /**
-   * A machine-readable discriminator from the problem document, where the
-   * endpoint sends one. Used to tell "wrong code" from "expired code" without
-   * parsing Norwegian prose — see `src/api/auth.ts`.
+   * How long to wait, in seconds. From `Retry-After`, or from the problem
+   * document's own `retryAfterSeconds` — `/auth/verify` sends it that way,
+   * because the attempt cap is the endpoint's own budget rather than the rate
+   * limiter's.
    */
-  readonly code: string | undefined
+  readonly retryAfterSeconds: number | undefined
 
   constructor(init: {
     status: number
@@ -29,7 +28,6 @@ export class ApiError extends Error {
     detail?: string
     traceId?: string
     retryAfterSeconds?: number
-    code?: string
   }) {
     super(init.detail ? `${init.title}: ${init.detail}` : init.title)
     this.name = 'ApiError'
@@ -37,7 +35,6 @@ export class ApiError extends Error {
     this.detail = init.detail
     this.traceId = init.traceId
     this.retryAfterSeconds = init.retryAfterSeconds
-    this.code = init.code
   }
 }
 
@@ -45,8 +42,7 @@ interface ProblemDetails {
   title?: string
   detail?: string
   traceId?: string
-  code?: string
-  errorCode?: string
+  retryAfterSeconds?: number
 }
 
 async function readProblem(response: Response): Promise<ApiError> {
@@ -63,37 +59,19 @@ async function readProblem(response: Response): Promise<ApiError> {
     problem = {}
   }
 
-  const retryAfter = Number(response.headers.get('retry-after'))
+  const header = Number(response.headers.get('retry-after'))
+  const retryAfter = Number.isFinite(header) && header > 0 ? header : problem.retryAfterSeconds
 
   return new ApiError({
     status: response.status,
     title: problem.title ?? response.statusText ?? `HTTP ${response.status}`,
     detail: problem.detail,
     traceId: problem.traceId,
-    retryAfterSeconds: Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : undefined,
-    code: problem.code ?? problem.errorCode,
+    retryAfterSeconds: typeof retryAfter === 'number' && retryAfter > 0 ? retryAfter : undefined,
   })
 }
 
-/**
- * ASP.NET Core's antiforgery cookie and header names.
- *
- * The session is an `HttpOnly` cookie the browser attaches by itself
- * (ADR-0017), which is exactly what makes cross-site request forgery possible,
- * so state-changing calls carry a header a cross-site form cannot set. Where
- * the API issues a readable antiforgery cookie we echo it back; where it does
- * not, `X-Requested-With` still forces a preflight the attacker's origin has to
- * survive. Both are cheap, and neither breaks the same-origin proxy path.
- */
-const CSRF_COOKIE = 'XSRF-TOKEN'
-const CSRF_HEADER = 'X-XSRF-TOKEN'
-
 const SAFE_METHODS = new Set(['GET', 'HEAD'])
-
-function readCookie(name: string): string | null {
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))
-  return match ? decodeURIComponent(match[1]) : null
-}
 
 type UnauthorizedListener = () => void
 
@@ -136,11 +114,10 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
 
   if (body !== undefined) headers['content-type'] = 'application/json'
 
-  if (!SAFE_METHODS.has(method)) {
-    headers['x-requested-with'] = 'XMLHttpRequest'
-    const token = readCookie(CSRF_COOKIE)
-    if (token) headers[CSRF_HEADER] = token
-  }
+  // The API refuses a state-changing request that does not carry this header,
+  // and never looks at what is in it — so "1" is as good as a token, and there
+  // is no token store on either side.
+  if (!SAFE_METHODS.has(method)) headers[ANTI_FORGERY_HEADER] = '1'
 
   const response = await fetch(url, {
     method,

@@ -17,6 +17,20 @@
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
 /**
+ * The anti-forgery header the API requires on every state-changing request.
+ *
+ * The session cookie is `SameSite=None`, so the browser would attach it to a
+ * cross-site form post too — that is the whole of CSRF. A custom header is what
+ * a form cannot set: sending it forces a CORS preflight, which the API answers
+ * against its origin allowlist. The value is never checked; being able to set
+ * it at all is the proof.
+ *
+ * Must match the API's `Security:AntiForgeryHeader` setting, which defaults to
+ * this name. A request without it is refused with 403.
+ */
+export const ANTI_FORGERY_HEADER = 'X-Rekfar-Csrf'
+
+/**
  * Features to ask for per extent. The API caps at 1000 and defaults to 500; at
  * national zoom it returns the highest peaks in view and sets `truncated`
  * rather than refusing the request.

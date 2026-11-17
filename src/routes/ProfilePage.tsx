@@ -37,22 +37,30 @@ export function ProfilePage() {
   // /profil renders while `GET /me` is still in the air.
   useEffect(() => {
     if (!user) return
-    setDisplayName(user.displayName ?? '')
+    setDisplayName(user.displayName)
     setLocale(user.locale)
   }, [user])
 
   if (!user) return null
 
   async function save() {
+    // The API trims and then requires 1–80 characters, and there is no way to
+    // clear a display name — the column is NOT NULL, and an account starts with
+    // one taken from its address. Checking here keeps that a field-level note
+    // in Norwegian rather than a 400 whose detail is written in English.
+    const trimmed = displayName.trim()
+
+    if (trimmed.length === 0 || trimmed.length > 80) {
+      setSaveState('idle')
+      setError(t('profile.displayNameInvalid'))
+      return
+    }
+
     setSaveState('saving')
     setError(null)
 
     try {
-      const trimmed = displayName.trim()
-      // An empty field means "no display name", which is a null on the wire,
-      // not an empty string the API would have to interpret.
-      const saved = await updateProfile({ displayName: trimmed === '' ? null : trimmed, locale })
-      adopt(saved)
+      adopt(await updateProfile({ displayName: trimmed, locale }))
       setSaveState('saved')
     } catch (cause) {
       setSaveState('idle')
@@ -89,6 +97,7 @@ export function ProfilePage() {
 
         <form
           className="form"
+          noValidate
           onSubmit={(event) => {
             event.preventDefault()
             void save()
@@ -109,6 +118,7 @@ export function ProfilePage() {
               id={displayNameId}
               type="text"
               autoComplete="nickname"
+              required
               maxLength={80}
               placeholder={t('profile.displayNamePlaceholder')}
               value={displayName}
